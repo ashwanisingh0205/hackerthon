@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser } = require('../controllers/authController');
+const { 
+  registerUser, 
+  loginUser, 
+  refreshToken, 
+  logoutUser, 
+  getCurrentUser 
+} = require('../controllers/authController');
+const { authenticate } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -35,5 +42,14 @@ router.post('/signup', registerUser);
 
 // @route   POST /api/auth/login
 router.post('/login', loginUser);
+
+// @route   POST /api/auth/refresh
+router.post('/refresh', refreshToken);
+
+// @route   POST /api/auth/logout
+router.post('/logout', logoutUser);
+
+// @route   GET /api/auth/me
+router.get('/me', authenticate, getCurrentUser);
 
 module.exports = router; 

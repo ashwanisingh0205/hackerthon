@@ -6,7 +6,7 @@ const options = {
     info: {
       title: 'Authentication API',
       version: '1.0.0',
-      description: 'A simple authentication API with registration and login functionality',
+      description: 'A secure authentication API with JWT access and refresh tokens',
       contact: {
         name: 'API Support',
         email: 'support@example.com'
@@ -19,6 +19,14 @@ const options = {
       }
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your access token'
+        }
+      },
       schemas: {
         User: {
           type: 'object',
@@ -54,6 +62,79 @@ const options = {
             password: {
               type: 'string',
               description: 'User password'
+            }
+          }
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Login successful'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                user: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'string',
+                      example: '507f1f77bcf86cd799439011'
+                    },
+                    username: {
+                      type: 'string',
+                      example: 'johndoe'
+                    },
+                    email: {
+                      type: 'string',
+                      example: 'john@example.com'
+                    }
+                  }
+                },
+                accessToken: {
+                  type: 'string',
+                  description: 'JWT access token (valid for 15 minutes)',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                },
+                refreshToken: {
+                  type: 'string',
+                  description: 'JWT refresh token (valid for 30 days)',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                }
+              }
+            }
+          }
+        },
+        TokenResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Token refreshed successfully'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                accessToken: {
+                  type: 'string',
+                  description: 'New JWT access token (valid for 15 minutes)',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                },
+                refreshToken: {
+                  type: 'string',
+                  description: 'New JWT refresh token (valid for 30 days)',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                }
+              }
             }
           }
         },

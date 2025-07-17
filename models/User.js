@@ -23,7 +23,17 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters']
-  }
+  },
+  refreshTokens: [{
+    token: {
+      type: String,
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, {
   timestamps: true
 });
@@ -40,5 +50,23 @@ userSchema.pre('save', async function(next) {
     next(error);
   }
 });
+
+// Method to add refresh token
+userSchema.methods.addRefreshToken = function(token) {
+  this.refreshTokens.push({ token });
+  return this.save();
+};
+
+// Method to remove refresh token
+userSchema.methods.removeRefreshToken = function(token) {
+  this.refreshTokens = this.refreshTokens.filter(rt => rt.token !== token);
+  return this.save();
+};
+
+// Method to clear all refresh tokens
+userSchema.methods.clearRefreshTokens = function() {
+  this.refreshTokens = [];
+  return this.save();
+};
 
 module.exports = mongoose.model('User', userSchema); 

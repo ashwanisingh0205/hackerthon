@@ -1,54 +1,10 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('../utils/asyncHandler');
+const { generateTokens, verifyRefreshToken } = require('../utils/jwtUtils');
 const config = require('../config/config');
 
-/**
- * @swagger
- * /api/auth/signup:
- *   post:
- *     summary: Register a new user
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/User'
- *           example:
- *             username: "johndoe"
- *             email: "john@example.com"
- *             password: "password123"
- *     responses:
- *       201:
- *         description: User registered successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *             example:
- *               success: true
- *               message: "User registered successfully"
- *               data:
- *                 id: "507f1f77bcf86cd799439011"
- *                 username: "johndoe"
- *                 email: "john@example.com"
- *       400:
- *         description: Bad request - validation error or user already exists
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               error: "User already exists"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
+
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -90,60 +46,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @swagger
- * /api/auth/login:
- *   post:
- *     summary: Login user
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
- *           example:
- *             email: "john@example.com"
- *             password: "password123"
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *             example:
- *               success: true
- *               message: "Login successful"
- *               data:
- *                 id: "507f1f77bcf86cd799439011"
- *                 username: "johndoe"
- *                 email: "john@example.com"
- *       400:
- *         description: Bad request - missing fields
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               error: "Email and password are required"
- *       401:
- *         description: Unauthorized - invalid credentials
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *             example:
- *               success: false
- *               error: "Invalid credentials"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
+
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -175,18 +78,143 @@ const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
+  // Generate tokens
+  const { accessToken, refreshToken } = generateTokens({
+    userId: user._id,
+    email: user.email
+  });
+
+  // Save refresh token to database
+  await user.addRefreshToken(refreshToken);
+
   res.json({
     success: true,
     message: 'Login successful',
     data: {
-      id: user._id,
-      username: user.username,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      },
+      accessToken,
+      refreshToken
+    }
+  });
+});
+
+
+
+const refreshToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({
+      success: false,
+      error: 'Refresh token is required'
+    });
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+    
+    // Find user and check if refresh token exists
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Check if refresh token exists in user's refresh tokens
+    const tokenExists = user.refreshTokens.some(rt => rt.token === refreshToken);
+    
+    if (!tokenExists) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid refresh token'
+      });
+    }
+
+    // Generate new tokens
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens({
+      userId: user._id,
       email: user.email
+    });
+
+    // Remove old refresh token and add new one
+    await user.removeRefreshToken(refreshToken);
+    await user.addRefreshToken(newRefreshToken);
+
+    res.json({
+      success: true,
+      message: 'Token refreshed successfully',
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
+      }
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid refresh token'
+    });
+  }
+});
+
+
+const logoutUser = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({
+      success: false,
+      error: 'Refresh token is required'
+    });
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+    
+    // Find user and remove refresh token
+    const user = await User.findById(decoded.userId);
+    
+    if (user) {
+      await user.removeRefreshToken(refreshToken);
+    }
+
+    res.json({
+      success: true,
+      message: 'Logout successful'
+    });
+  } catch (error) {
+    // Even if token is invalid, return success to prevent token enumeration
+    res.json({
+      success: true,
+      message: 'Logout successful'
+    });
+  }
+});
+
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      id: req.user._id,
+      username: req.user.username,
+      email: req.user.email
     }
   });
 });
 
 module.exports = {
   registerUser,
-  loginUser
+  loginUser,
+  refreshToken,
+  logoutUser,
+  getCurrentUser
 }; 
