@@ -28,6 +28,14 @@ const registerUser = asyncHandler(async (req, res) => {
     });
   }
 
+  // Validate password for spaces
+  if (/\s/.test(password)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Password cannot contain spaces'
+    });
+  }
+
   // Create user
   const user = await User.create({
     username,
@@ -55,6 +63,14 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(400).json({
       success: false,
       error: 'Email and password are required'
+    });
+  }
+
+  // Validate password for spaces
+  if (/\s/.test(password)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Password cannot contain spaces'
     });
   }
 

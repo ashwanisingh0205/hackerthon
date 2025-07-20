@@ -21,8 +21,15 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
+    trim: true,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters']
+    minlength: [6, 'Password must be at least 6 characters'],
+    validate: {
+      validator: function(value) {
+        return !/\s/.test(value);
+      },
+      message: 'Password cannot contain spaces'
+    }
   },
   refreshTokens: [{
     token: {

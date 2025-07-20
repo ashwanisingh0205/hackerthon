@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const BASE_URL = 'http://localhost:5000/api/auth';
+const BASE_URL = 'http://localhost:8000/api/auth';
 
 // Test JWT Authentication Flow
 async function testJWTAuth() {

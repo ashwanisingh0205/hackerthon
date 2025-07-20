@@ -46,7 +46,7 @@ A clean, production-ready authentication backend with proper separation of conce
    ```
 
 5. **View API Documentation:**
-   - Open your browser and go to: `http://localhost:5000/api-docs`
+   - Open your browser and go to: `http://localhost:8000/api-docs`
    - Interactive Swagger UI with full API documentation
 
 ## 📡 API Endpoints
