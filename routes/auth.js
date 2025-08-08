@@ -3,7 +3,6 @@ const router = express.Router();
 const { 
   registerUser, 
   loginUser, 
-  refreshToken, 
   logoutUser, 
   getCurrentUser 
 } = require('../controllers/authController');
@@ -77,63 +76,10 @@ const { authenticate } = require('../middleware/auth');
 
 /**
  * @swagger
- * /api/auth/refresh:
- *   post:
- *     summary: Refresh access token
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: ['refreshToken']
- *             properties:
- *               refreshToken:
- *                 type: string
- *                 description: JWT refresh token
- *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- *     responses:
- *       200:
- *         description: Token refreshed successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/TokenResponse'
- *       400:
- *         description: Bad request - invalid refresh token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         description: Unauthorized - invalid or expired refresh token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-
-/**
- * @swagger
  * /api/auth/logout:
  *   post:
  *     summary: Logout user
  *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: ['refreshToken']
- *             properties:
- *               refreshToken:
- *                 type: string
- *                 description: JWT refresh token to invalidate
- *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *     responses:
  *       200:
  *         description: Logout successful
@@ -148,12 +94,6 @@ const { authenticate } = require('../middleware/auth');
  *                 message:
  *                   type: string
  *                   example: "Logout successful"
- *       401:
- *         description: Unauthorized - invalid access token
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
 
 /**
@@ -181,23 +121,24 @@ const { authenticate } = require('../middleware/auth');
  *                 data:
  *                   type: object
  *                   properties:
- *                     user:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                           example: "507f1f77bcf86cd799439011"
- *                         username:
- *                           type: string
- *                           example: "johndoe"
- *                         email:
- *                           type: string
- *                           example: "john@example.com"
- *                         createdAt:
- *                           type: string
- *                           format: date-time
+ *                     id:
+ *                       type: string
+ *                       example: "507f1f77bcf86cd799439011"
+ *                     fullName:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       example: "john@example.com"
+ *                     mobileNumber:
+ *                       type: string
+ *                       example: "+1234567890"
+ *                     dateOfBirth:
+ *                       type: string
+ *                       format: date
+ *                       example: "1990-01-01"
  *       401:
- *         description: Unauthorized - invalid access token
+ *         description: Unauthorized - invalid token
  *         content:
  *           application/json:
  *             schema:
@@ -209,9 +150,6 @@ router.post('/signup', registerUser);
 
 // @route   POST /api/auth/login
 router.post('/login', loginUser);
-
-// @route   POST /api/auth/refresh
-router.post('/refresh', refreshToken);
 
 // @route   POST /api/auth/logout
 router.post('/logout', logoutUser);

@@ -12,10 +12,8 @@ const config = {
   bcryptRounds: 12,
   
   // JWT Configuration
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET || 'your-access-secret-key-change-in-production',
-  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key-change-in-production',
-  jwtAccessExpiresIn: '15m', // 15 minutes
-  jwtRefreshExpiresIn: '30d', // 30 days
+  jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+  jwtExpiresIn: '30d', // 30 days
   
   // CORS Configuration
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',

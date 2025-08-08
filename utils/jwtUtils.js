@@ -2,72 +2,30 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 
 /**
- * Generate access token
+ * Generate JWT token
  * @param {Object} payload - Token payload
- * @returns {string} Access token
+ * @returns {string} JWT token
  */
-const generateAccessToken = (payload) => {
-  return jwt.sign(payload, config.jwtAccessSecret, {
-    expiresIn: config.jwtAccessExpiresIn
+const generateToken = (payload) => {
+  return jwt.sign(payload, config.jwtSecret, {
+    expiresIn: config.jwtExpiresIn
   });
 };
 
 /**
- * Generate refresh token
- * @param {Object} payload - Token payload
- * @returns {string} Refresh token
- */
-const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, config.jwtRefreshSecret, {
-    expiresIn: config.jwtRefreshExpiresIn
-  });
-};
-
-/**
- * Verify access token
- * @param {string} token - Access token to verify
+ * Verify JWT token
+ * @param {string} token - JWT token to verify
  * @returns {Object} Decoded token payload
  */
-const verifyAccessToken = (token) => {
+const verifyToken = (token) => {
   try {
-    return jwt.verify(token, config.jwtAccessSecret);
+    return jwt.verify(token, config.jwtSecret);
   } catch (error) {
-    throw new Error('Invalid access token');
+    throw new Error('Invalid token');
   }
-};
-
-/**
- * Verify refresh token
- * @param {string} token - Refresh token to verify
- * @returns {Object} Decoded token payload
- */
-const verifyRefreshToken = (token) => {
-  try {
-    return jwt.verify(token, config.jwtRefreshSecret);
-  } catch (error) {
-    throw new Error('Invalid refresh token');
-  }
-};
-
-/**
- * Generate both access and refresh tokens
- * @param {Object} payload - Token payload
- * @returns {Object} Object containing access and refresh tokens
- */
-const generateTokens = (payload) => {
-  const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
-  
-  return {
-    accessToken,
-    refreshToken
-  };
 };
 
 module.exports = {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyAccessToken,
-  verifyRefreshToken,
-  generateTokens
+  generateToken,
+  verifyToken
 }; 

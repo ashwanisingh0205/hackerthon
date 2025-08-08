@@ -1,9 +1,9 @@
-const { verifyAccessToken } = require('../utils/jwtUtils');
+const { verifyToken } = require('../utils/jwtUtils');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 
 /**
- * Middleware to authenticate user using access token
+ * Middleware to authenticate user using JWT token
  */
 const authenticate = asyncHandler(async (req, res, next) => {
   // Get token from header
@@ -12,7 +12,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
-      error: 'Access token is required'
+      error: 'Token is required'
     });
   }
 
@@ -20,7 +20,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
 
   try {
     // Verify token
-    const decoded = verifyAccessToken(token);
+    const decoded = verifyToken(token);
     
     // Get user from database
     const user = await User.findById(decoded.userId).select('-password');
@@ -38,7 +38,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      error: 'Invalid or expired access token'
+      error: 'Invalid or expired token'
     });
   }
 });

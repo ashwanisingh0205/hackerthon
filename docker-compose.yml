@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+      - PORT=8000
+      - MONGODB_URI=mongodb://mongo:27017/auth-app
+      - JWT_SECRET=your-secret-key-change-in-production
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      - mongo
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=auth-app
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:

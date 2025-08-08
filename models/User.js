@@ -3,13 +3,10 @@ const bcrypt = require('bcryptjs');
 const config = require('../config/config');
 
 const userSchema = new mongoose.Schema({
-  username: {
+  fullName: {
     type: String,
-    required: [true, 'Username is required'],
-    unique: true,
     trim: true,
-    minlength: [3, 'Username must be at least 3 characters'],
-    maxlength: [30, 'Username cannot exceed 30 characters']
+    maxlength: [100, 'Full name cannot exceed 100 characters']
   },
   email: {
     type: String,
@@ -18,6 +15,21 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  mobileNumber: {
+    type: String,
+    trim: true,
+    match: [/^\+?[\d\s\-\(\)]+$/, 'Please enter a valid mobile number']
+  },
+  dateOfBirth: {
+    type: Date,
+    validate: {
+      validator: function(value) {
+        if (!value) return true; // Allow empty/null values
+        return value <= new Date();
+      },
+      message: 'Date of birth cannot be in the future'
+    }
   },
   password: {
     type: String,
@@ -30,17 +42,7 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Password cannot contain spaces'
     }
-  },
-  refreshTokens: [{
-    token: {
-      type: String,
-      required: true
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  }]
+  }
 }, {
   timestamps: true
 });
@@ -57,23 +59,5 @@ userSchema.pre('save', async function(next) {
     next(error);
   }
 });
-
-// Method to add refresh token
-userSchema.methods.addRefreshToken = function(token) {
-  this.refreshTokens.push({ token });
-  return this.save();
-};
-
-// Method to remove refresh token
-userSchema.methods.removeRefreshToken = function(token) {
-  this.refreshTokens = this.refreshTokens.filter(rt => rt.token !== token);
-  return this.save();
-};
-
-// Method to clear all refresh tokens
-userSchema.methods.clearRefreshTokens = function() {
-  this.refreshTokens = [];
-  return this.save();
-};
 
 module.exports = mongoose.model('User', userSchema); 

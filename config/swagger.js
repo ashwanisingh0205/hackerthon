@@ -30,18 +30,27 @@ const options = {
       schemas: {
         User: {
           type: 'object',
-          required: ['username', 'email', 'password'],
+          required: ['email', 'password'],
           properties: {
-            username: {
+            fullName: {
               type: 'string',
-              description: 'User username',
-              minLength: 3,
-              maxLength: 30
+              description: 'User full name',
+              maxLength: 100
             },
             email: {
               type: 'string',
               format: 'email',
               description: 'User email address'
+            },
+            mobileNumber: {
+              type: 'string',
+              description: 'User mobile number',
+              pattern: '^\\+?[\\d\\s\\-\\(\\)]+$'
+            },
+            dateOfBirth: {
+              type: 'string',
+              format: 'date',
+              description: 'User date of birth (YYYY-MM-DD)'
             },
             password: {
               type: 'string',
@@ -79,23 +88,32 @@ const options = {
             data: {
               type: 'object',
               properties: {
-                user: {
-                  type: 'object',
-                  properties: {
-                    id: {
-                      type: 'string',
-                      example: '507f1f77bcf86cd799439011'
-                    },
-                    username: {
-                      type: 'string',
-                      example: 'johndoe'
-                    },
-                    email: {
-                      type: 'string',
-                      example: 'john@example.com'
-                    }
-                  }
-                },
+                                 user: {
+                   type: 'object',
+                   properties: {
+                     id: {
+                       type: 'string',
+                       example: '507f1f77bcf86cd799439011'
+                     },
+                     fullName: {
+                       type: 'string',
+                       example: 'John Doe'
+                     },
+                     email: {
+                       type: 'string',
+                       example: 'john@example.com'
+                     },
+                     mobileNumber: {
+                       type: 'string',
+                       example: '+1234567890'
+                     },
+                     dateOfBirth: {
+                       type: 'string',
+                       format: 'date',
+                       example: '1990-01-01'
+                     }
+                   }
+                 },
                 accessToken: {
                   type: 'string',
                   description: 'JWT access token (valid for 15 minutes)',
@@ -156,13 +174,22 @@ const options = {
                   type: 'string',
                   example: '507f1f77bcf86cd799439011'
                 },
-                username: {
+                fullName: {
                   type: 'string',
-                  example: 'johndoe'
+                  example: 'John Doe'
                 },
                 email: {
                   type: 'string',
                   example: 'john@example.com'
+                },
+                mobileNumber: {
+                  type: 'string',
+                  example: '+1234567890'
+                },
+                dateOfBirth: {
+                  type: 'string',
+                  format: 'date',
+                  example: '1990-01-01'
                 }
               }
             }
@@ -178,6 +205,228 @@ const options = {
             error: {
               type: 'string',
               example: 'Error message'
+            }
+          }
+        },
+        File: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '507f1f77bcf86cd799439011'
+            },
+            filename: {
+              type: 'string',
+              example: 'document-1234567890.pdf'
+            },
+            originalName: {
+              type: 'string',
+              example: 'document.pdf'
+            },
+            mimetype: {
+              type: 'string',
+              example: 'application/pdf'
+            },
+            size: {
+              type: 'number',
+              example: 1024000
+            },
+            description: {
+              type: 'string',
+              example: 'Important document'
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              example: ['document', 'pdf', 'important']
+            },
+            uploadedBy: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011'
+                },
+                fullName: {
+                  type: 'string',
+                  example: 'John Doe'
+                },
+                email: {
+                  type: 'string',
+                  example: 'john@example.com'
+                }
+              }
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        Video: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '507f1f77bcf86cd799439011'
+            },
+            title: {
+              type: 'string',
+              example: 'Sample Video'
+            },
+            description: {
+              type: 'string',
+              example: 'This is a sample video'
+            },
+            cloudinaryUrl: {
+              type: 'string',
+              example: 'https://res.cloudinary.com/example/video/upload/v123/sample.mp4'
+            },
+            duration: {
+              type: 'number',
+              example: 120
+            },
+            format: {
+              type: 'string',
+              example: 'mp4'
+            },
+            size: {
+              type: 'number',
+              example: 10240000
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              example: ['sample', 'video']
+            },
+            isPublic: {
+              type: 'boolean',
+              example: true
+            },
+            views: {
+              type: 'number',
+              example: 150
+            },
+            uploadedBy: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011'
+                },
+                fullName: {
+                  type: 'string',
+                  example: 'John Doe'
+                },
+                email: {
+                  type: 'string',
+                  example: 'john@example.com'
+                }
+              }
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
+        Quiz: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              example: '507f1f77bcf86cd799439011'
+            },
+            title: {
+              type: 'string',
+              example: 'JavaScript Basics'
+            },
+            description: {
+              type: 'string',
+              example: 'Test your JavaScript knowledge'
+            },
+            questions: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  question: {
+                    type: 'string',
+                    example: 'What is JavaScript?'
+                  },
+                  options: {
+                    type: 'array',
+                    items: {
+                      type: 'string'
+                    },
+                    example: ['A programming language', 'A markup language', 'A styling language']
+                  },
+                  correctAnswer: {
+                    type: 'integer',
+                    example: 0
+                  },
+                  explanation: {
+                    type: 'string',
+                    example: 'JavaScript is a programming language used for web development.'
+                  }
+                }
+              }
+            },
+            timeLimit: {
+              type: 'integer',
+              example: 30
+            },
+            passingScore: {
+              type: 'integer',
+              example: 70
+            },
+            category: {
+              type: 'string',
+              example: 'Programming'
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              example: ['javascript', 'programming']
+            },
+            isPublic: {
+              type: 'boolean',
+              example: true
+            },
+            attempts: {
+              type: 'integer',
+              example: 25
+            },
+            averageScore: {
+              type: 'number',
+              example: 75.5
+            },
+            createdBy: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011'
+                },
+                fullName: {
+                  type: 'string',
+                  example: 'John Doe'
+                },
+                email: {
+                  type: 'string',
+                  example: 'john@example.com'
+                }
+              }
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
             }
           }
         }

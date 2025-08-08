@@ -10,6 +10,9 @@ const swaggerSpecs = require('./config/swagger');
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const fileRoutes = require('./routes/files');
+const videoRoutes = require('./routes/videos');
+const quizRoutes = require('./routes/quizzes');
 
 // Initialize express
 const app = express();
@@ -47,6 +50,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/files', fileRoutes);
+app.use('/api/videos', videoRoutes);
+app.use('/api/quizzes', quizRoutes);
 
 /**
  * @swagger
