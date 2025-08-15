@@ -6,7 +6,7 @@ const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   
   // Database Configuration
-  mongoURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/auth-app',
+  mongoURI: process.env.MONGODB_URI,
   
   // Security Configuration
   bcryptRounds: 12,
