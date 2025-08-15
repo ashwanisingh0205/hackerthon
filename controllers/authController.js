@@ -138,9 +138,73 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   });
 });
 
+const verifyToken = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+
+  // Validate input
+  if (!token) {
+    return res.status(400).json({
+      success: false,
+      error: 'Token is required'
+    });
+  }
+
+  try {
+    // Verify token using the utility function
+    const { verifyToken: verifyTokenUtil } = require('../utils/jwtUtils');
+    const decoded = verifyTokenUtil(token);
+    
+    // Get user from database to ensure user still exists
+    const user = await User.findById(decoded.userId).select('-password');
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not found',
+        isValid: false
+      });
+    }
+
+    // Calculate token age
+    const tokenAge = Math.floor((Date.now() - decoded.iat * 1000) / (1000 * 60 * 60 * 24)); // days
+
+    res.json({
+      success: true,
+      message: 'Token is valid',
+      data: {
+        isValid: true,
+        user: {
+          id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          mobileNumber: user.mobileNumber,
+          dateOfBirth: user.dateOfBirth
+        },
+        tokenInfo: {
+          issuedAt: new Date(decoded.iat * 1000).toISOString(),
+          expiresAt: new Date(decoded.exp * 1000).toISOString(),
+          ageInDays: tokenAge,
+          remainingDays: Math.max(0, 30 - tokenAge) // Assuming 30-day expiration
+        }
+      }
+    });
+
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      error: 'Invalid or expired token',
+      data: {
+        isValid: false,
+        reason: error.message
+      }
+    });
+  }
+});
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
-  getCurrentUser
+  getCurrentUser,
+  verifyToken
 }; 

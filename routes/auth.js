@@ -4,7 +4,8 @@ const {
   registerUser, 
   loginUser, 
   logoutUser, 
-  getCurrentUser 
+  getCurrentUser,
+  verifyToken
 } = require('../controllers/authController');
 const { authenticate } = require('../middleware/auth');
 
@@ -145,6 +146,111 @@ const { authenticate } = require('../middleware/auth');
  *               $ref: '#/components/schemas/ErrorResponse'
  */
 
+/**
+ * @swagger
+ * /api/auth/verify:
+ *   post:
+ *     summary: Verify JWT token validity
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: JWT token to verify
+ *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *     responses:
+ *       200:
+ *         description: Token verification successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token is valid"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     isValid:
+ *                       type: boolean
+ *                       example: true
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: string
+ *                           example: "507f1f77bcf86cd799439011"
+ *                         fullName:
+ *                           type: string
+ *                           example: "John Doe"
+ *                         email:
+ *                           type: string
+ *                           example: "john@example.com"
+ *                         mobileNumber:
+ *                           type: string
+ *                           example: "+1234567890"
+ *                         dateOfBirth:
+ *                           type: string
+ *                           format: date
+ *                           example: "1990-01-01"
+ *                     tokenInfo:
+ *                       type: object
+ *                       properties:
+ *                         issuedAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2024-01-01T00:00:00.000Z"
+ *                         expiresAt:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2024-01-31T00:00:00.000Z"
+ *                         ageInDays:
+ *                           type: number
+ *                           example: 5
+ *                         remainingDays:
+ *                           type: number
+ *                           example: 25
+ *       400:
+ *         description: Bad request - token missing
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized - invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid or expired token"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     isValid:
+ *                       type: boolean
+ *                       example: false
+ *                     reason:
+ *                       type: string
+ *                       example: "Invalid token"
+ */
+
 // @route   POST /api/auth/signup
 router.post('/signup', registerUser);
 
@@ -156,5 +262,8 @@ router.post('/logout', logoutUser);
 
 // @route   GET /api/auth/me
 router.get('/me', authenticate, getCurrentUser);
+
+// @route   POST /api/auth/verify
+router.post('/verify', verifyToken);
 
 module.exports = router; 
