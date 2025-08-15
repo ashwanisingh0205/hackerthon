@@ -8,7 +8,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=8000
-      - MONGODB_URI=mongodb://mongo:27017/auth-app
+      - MONGODB_URI=mongodb+srv://ashwanikumar13628:Ashwani151717@cluster0.tgfgv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - JWT_SECRET=your-secret-key-change-in-production
       - CORS_ORIGIN=http://localhost:3000
     depends_on:
