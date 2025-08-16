@@ -13,8 +13,7 @@ RUN npm ci --only=production
 # Copy the rest of the application code
 COPY . .
 
-# Create uploads directory
-RUN mkdir -p uploads/others
+
 
 # Expose the port the app runs on
 EXPOSE 8000

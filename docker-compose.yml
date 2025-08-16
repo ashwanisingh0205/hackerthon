@@ -14,21 +14,6 @@ services:
       - CLOUDINARY_CLOUD_NAME=dn2bkta45
       - CLOUDINARY_API_KEY=892636761354991
       - CLOUDINARY_API_SECRET=luPdrJkWF6Z3Rm93PVOrPASax64
-    depends_on:
-      - mongo
     volumes:
       - ./uploads:/app/uploads
     restart: unless-stopped
-
-  mongo:
-    image: mongo:6.0
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_DATABASE=auth-app
-    volumes:
-      - mongodb_data:/data/db
-    restart: unless-stopped
-
-volumes:
-  mongodb_data:

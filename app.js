@@ -13,6 +13,9 @@ const authRoutes = require('./routes/auth');
 const fileRoutes = require('./routes/files');
 const videoRoutes = require('./routes/videos');
 const quizRoutes = require('./routes/quizzes');
+const pointsRoutes = require('./routes/points');
+const budgetRoutes = require('./routes/budgets');
+const learningRoutes = require('./routes/learning');
 
 // Initialize express
 const app = express();
@@ -53,6 +56,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/quizzes', quizRoutes);
+app.use('/api/points', pointsRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/learning', learningRoutes);
 
 /**
  * @swagger
