@@ -56,10 +56,7 @@ const financeBasicsSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'Creator is required']
   },
-  isPublished: {
-    type: Boolean,
-    default: false
-  },
+
   views: {
     type: Number,
     default: 0

@@ -4,6 +4,7 @@ const {
   // Finance Basics
   createFinanceBasics,
   getFinanceBasics,
+  getAllFinanceBasicsDebug,
   
   // SIP Learning
   createSIPLearning,
@@ -154,6 +155,9 @@ router.post('/finance-basics', authenticate, createFinanceBasics);
 
 // @route   GET /api/financial/finance-basics
 router.get('/finance-basics', getFinanceBasics);
+
+// @route   GET /api/financial/finance-basics/debug (for troubleshooting)
+router.get('/finance-basics/debug', getAllFinanceBasicsDebug);
 
 // ===== SIP LEARNING ROUTES =====
 
