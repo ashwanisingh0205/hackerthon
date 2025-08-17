@@ -69,7 +69,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### Development Environment
 
-1. **Start the application with MongoDB:**
+1. **Start the application with MongoDB and Redis:**
    ```bash
    npm run docker:compose:build
    ```
@@ -78,11 +78,34 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    - Backend API: http://localhost:8000
    - Swagger Documentation: http://localhost:8000/api-docs
    - MongoDB: localhost:27017
+   - Redis: localhost:6379
 
 3. **Stop the application:**
    ```bash
    npm run docker:compose:down
    ```
+
+### Redis Configuration (Optional)
+
+The application includes Redis for caching learning content and categories. Redis is **optional** - the app will work without it using in-memory fallback caching.
+
+**With Redis (recommended for production):**
+- Faster caching performance
+- Persistent cache across app restarts
+- Better memory management
+
+**Without Redis:**
+- In-memory caching (cleared on app restart)
+- No additional infrastructure required
+- Suitable for development/testing
+
+**Environment Variables:**
+```env
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+```
 
 ### Production Environment
 
