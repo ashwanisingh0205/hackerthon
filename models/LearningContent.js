@@ -12,11 +12,6 @@ const learningContentSchema = new mongoose.Schema({
     trim: true,
     maxlength: [1000, 'Description cannot exceed 1000 characters']
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'LearningCategory',
-    required: [true, 'Learning category is required']
-  },
   categorySlug: {
     type: String,
     required: [true, 'Category slug is required']
@@ -137,7 +132,6 @@ const learningContentSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-learningContentSchema.index({ category: 1, createdAt: -1 });
 learningContentSchema.index({ categorySlug: 1 });
 learningContentSchema.index({ difficulty: 1 });
 learningContentSchema.index({ isPublished: 1 });
@@ -157,16 +151,6 @@ learningContentSchema.virtual('totalDuration').get(function() {
     .reduce((total, video) => total + video.duration, 0);
 });
 
-// Pre-save middleware to ensure categorySlug is set
-learningContentSchema.pre('save', async function(next) {
-  if (this.isModified('category') && this.category) {
-    const Category = mongoose.model('LearningCategory');
-    const category = await Category.findById(this.category);
-    if (category) {
-      this.categorySlug = category.slug;
-    }
-  }
-  next();
-});
+
 
 module.exports = mongoose.model('LearningContent', learningContentSchema);

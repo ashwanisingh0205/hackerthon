@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const { 
-  // Category functions
-  createCategory, 
-  getCategories, 
-  updateCategory,
-  
   // Content functions
   createContent, 
   getContentByCategory, 
@@ -210,7 +205,17 @@ const { authenticate } = require('../middleware/auth');
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/LearningCategory'
+ *             type: object
+ *             required:
+ *               - name
+ *               - slug
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Category name
+ *               slug:
+ *                 type: string
+ *                 description: Category slug
  *     responses:
  *       200:
  *         description: Category updated successfully
@@ -238,7 +243,7 @@ const { authenticate } = require('../middleware/auth');
  *             type: object
  *             required:
  *               - title
- *               - category
+ *               - categorySlug
  *             properties:
  *               title:
  *                 type: string
@@ -246,9 +251,21 @@ const { authenticate } = require('../middleware/auth');
  *               description:
  *                 type: string
  *                 example: "Learn how compound interest works and why it's important for wealth building"
- *               category:
+ *               categorySlug:
  *                 type: string
- *                 example: "category_id_here"
+ *                 example: "finance"
+ *                 description: Category slug (e.g., "finance", "programming")
+ *               category:
+ *                 type: object
+ *                 description: Alternative format for backward compatibility
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Category ID (legacy)
+ *                   slug:
+ *                     type: string
+ *                     description: Category slug
+ *                     example: "finance"
  *               difficulty:
  *                 type: string
  *                 example: "beginner"
@@ -539,16 +556,7 @@ const { authenticate } = require('../middleware/auth');
  *         description: Unauthorized - invalid token
  */
 
-// ===== LEARNING CATEGORIES =====
 
-// @route   POST /api/learning/categories
-router.post('/categories', authenticate, createCategory);
-
-// @route   GET /api/learning/categories
-router.get('/categories', getCategories);
-
-// @route   PUT /api/learning/categories/:id
-router.put('/categories/:id', authenticate, updateCategory);
 
 // ===== LEARNING CONTENT =====
 

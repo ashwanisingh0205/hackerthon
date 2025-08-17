@@ -1,129 +1,11 @@
-const LearningCategory = require('../models/LearningCategory');
+const mongoose = require('mongoose');
 const LearningContent = require('../models/LearningContent');
 const Video = require('../models/Video');
 const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 const { redisUtils } = require('../config/redis');
 
-// ===== LEARNING CATEGORIES =====
 
-// Create learning category
-const createCategory = asyncHandler(async (req, res) => {
-  const { name, description, icon, color, sortOrder } = req.body;
-
-  // Validate required fields
-  if (!name) {
-    return res.status(400).json({
-      success: false,
-      error: 'Category name is required'
-    });
-  }
-
-  // Generate slug from name
-  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-  // Check if category already exists
-  const existingCategory = await LearningCategory.findOne({ 
-    $or: [{ name }, { slug }] 
-  });
-
-  if (existingCategory) {
-    return res.status(400).json({
-      success: false,
-      error: 'Category with this name or slug already exists'
-    });
-  }
-
-  // Create category
-  const category = await LearningCategory.create({
-    name,
-    slug,
-    description,
-    icon: icon || '📚',
-    color: color || '#3B82F6',
-    sortOrder: sortOrder || 0
-  });
-
-  // Invalidate related caches
-  await redisUtils.delPattern('cache:*/learning/categories*');
-  await redisUtils.delPattern('cache:*/learning/content/category/*');
-
-  res.status(201).json({
-    success: true,
-    message: 'Learning category created successfully',
-    data: category
-  });
-});
-
-// Get all learning categories
-const getCategories = asyncHandler(async (req, res) => {
-  const { isActive = true } = req.query;
-
-  // Try to get from cache first
-  const cacheKey = `categories:${isActive}`;
-  const cachedCategories = await redisUtils.get(cacheKey);
-  
-  if (cachedCategories) {
-    console.log('📦 Categories served from cache');
-    return res.json({
-      success: true,
-      data: cachedCategories,
-      fromCache: true
-    });
-  }
-
-  // Build query
-  const query = {};
-  if (isActive !== undefined) {
-    query.isActive = isActive === 'true';
-  }
-
-  const categories = await LearningCategory.find(query)
-    .sort({ sortOrder: 1, name: 1 });
-
-  // Cache categories for 1 hour
-  await redisUtils.set(cacheKey, categories, 3600);
-
-  res.json({
-    success: true,
-    data: categories,
-    fromCache: false
-  });
-});
-
-// Update learning category
-const updateCategory = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const updateData = req.body;
-
-  // If name is being updated, generate new slug
-  if (updateData.name) {
-    updateData.slug = updateData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  }
-
-  const updatedCategory = await LearningCategory.findByIdAndUpdate(
-    id,
-    updateData,
-    { new: true, runValidators: true }
-  );
-
-  if (!updatedCategory) {
-    return res.status(404).json({
-      success: false,
-      error: 'Learning category not found'
-    });
-  }
-
-  // Invalidate related caches
-  await redisUtils.delPattern('cache:*/learning/categories*');
-  await redisUtils.delPattern('cache:*/learning/content/category/*');
-
-  res.json({
-    success: true,
-    message: 'Category updated successfully',
-    data: updatedCategory
-  });
-});
 
 // ===== LEARNING CONTENT =====
 
@@ -132,7 +14,8 @@ const createContent = asyncHandler(async (req, res) => {
   const {
     title,
     description,
-    category,
+    categorySlug,
+    category, // Handle old format for backward compatibility
     difficulty,
     estimatedTime,
     tags,
@@ -143,20 +26,27 @@ const createContent = asyncHandler(async (req, res) => {
     isPublic
   } = req.body;
 
-  // Validate required fields
-  if (!title || !category) {
-    return res.status(400).json({
-      success: false,
-      error: 'Title and category are required'
-    });
+  // Handle both new and old category formats
+  let finalCategorySlug = categorySlug;
+  if (!finalCategorySlug && category) {
+    if (typeof category === 'string') {
+      finalCategorySlug = category;
+      console.log('📝 Using category string as categorySlug:', finalCategorySlug);
+    } else if (typeof category === 'object' && category.slug) {
+      finalCategorySlug = category.slug;
+      console.log('📝 Extracted categorySlug from category object:', finalCategorySlug);
+    }
+  }
+  
+  if (finalCategorySlug) {
+    console.log('📝 Final categorySlug:', finalCategorySlug);
   }
 
-  // Check if category exists
-  const categoryExists = await LearningCategory.findById(category);
-  if (!categoryExists) {
-    return res.status(404).json({
+  // Validate required fields
+  if (!title || !finalCategorySlug) {
+    return res.status(400).json({
       success: false,
-      error: 'Learning category not found'
+      error: 'Title and category slug are required'
     });
   }
 
@@ -164,8 +54,7 @@ const createContent = asyncHandler(async (req, res) => {
   const content = await LearningContent.create({
     title,
     description,
-    category,
-    categorySlug: categoryExists.slug,
+    categorySlug: finalCategorySlug,
     difficulty: difficulty || 'beginner',
     estimatedTime,
     tags: tags || [],
@@ -178,18 +67,18 @@ const createContent = asyncHandler(async (req, res) => {
     videos: []
   });
 
-  // Populate category and creator information
-  await content.populate('category', 'name slug icon color');
+  // Populate creator information
   await content.populate('createdBy', 'fullName email');
 
   // Invalidate related caches
   await redisUtils.delPattern('cache:*/learning/content*');
-  await redisUtils.delPattern(`cache:*/learning/content/category/${categoryExists.slug}*`);
+  await redisUtils.delPattern(`cache:*/learning/content/category/${finalCategorySlug}*`);
 
   res.status(201).json({
     success: true,
     message: 'Learning content created successfully',
-    data: content
+    data: content,
+    categorySlug: finalCategorySlug
   });
 });
 
@@ -211,18 +100,9 @@ const getContentByCategory = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if category exists
-  const category = await LearningCategory.findOne({ slug: categorySlug, isActive: true });
-  if (!category) {
-    return res.status(404).json({
-      success: false,
-      error: 'Learning category not found'
-    });
-  }
-
   // Build query
   const query = { 
-    category: category._id, 
+    categorySlug, 
     isPublished: isPublished === 'true',
     isPublic: true
   };
@@ -238,7 +118,6 @@ const getContentByCategory = asyncHandler(async (req, res) => {
 
   // Get content with pagination
   const content = await LearningContent.find(query)
-    .populate('category', 'name slug icon color')
     .populate('createdBy', 'fullName email')
     .populate('videos.videoId', 'title description cloudinaryUrl duration')
     .sort({ createdAt: -1 })
@@ -246,7 +125,7 @@ const getContentByCategory = asyncHandler(async (req, res) => {
     .limit(parseInt(limit));
 
   const responseData = {
-    category,
+    categorySlug,
     content,
     pagination: {
       currentPage: parseInt(page),
@@ -271,6 +150,14 @@ const getContentByCategory = asyncHandler(async (req, res) => {
 const getContentById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
+  // Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid content ID format'
+    });
+  }
+
   // Try to get from cache first
   const cacheKey = `content:${id}`;
   const cachedContent = await redisUtils.get(cacheKey);
@@ -287,7 +174,6 @@ const getContentById = asyncHandler(async (req, res) => {
   }
 
   const content = await LearningContent.findById(id)
-    .populate('category', 'name slug icon color')
     .populate('createdBy', 'fullName email')
     .populate('videos.videoId', 'title description cloudinaryUrl duration format size');
 
@@ -327,6 +213,21 @@ const getContentById = asyncHandler(async (req, res) => {
 const addVideoToContent = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { videoId, title, description, order } = req.body;
+
+  // Validate ObjectId formats
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid content ID format'
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid video ID format'
+    });
+  }
 
   // Validate required fields
   if (!videoId || !title) {
@@ -385,7 +286,6 @@ const addVideoToContent = asyncHandler(async (req, res) => {
   await content.save();
 
   // Populate the updated content
-  await content.populate('category', 'name slug icon color');
   await content.populate('createdBy', 'fullName email');
   await content.populate('videos.videoId', 'title description cloudinaryUrl duration');
 
@@ -403,6 +303,21 @@ const addVideoToContent = asyncHandler(async (req, res) => {
 // Remove video from learning content
 const removeVideoFromContent = asyncHandler(async (req, res) => {
   const { id, videoId } = req.params;
+
+  // Validate ObjectId formats
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid content ID format'
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid video ID format'
+    });
+  }
 
   // Check if content exists and user owns it
   const content = await LearningContent.findById(id);
@@ -433,7 +348,6 @@ const removeVideoFromContent = asyncHandler(async (req, res) => {
   await content.save();
 
   // Populate the updated content
-  await content.populate('category', 'name slug icon color');
   await content.populate('createdBy', 'fullName email');
   await content.populate('videos.videoId', 'title description cloudinaryUrl duration');
 
@@ -450,10 +364,10 @@ const removeVideoFromContent = asyncHandler(async (req, res) => {
 
 // Get all learning content (admin function)
 const getAllContent = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20, category, difficulty, isPublished, createdBy } = req.query;
+  const { page = 1, limit = 20, categorySlug, difficulty, isPublished, createdBy } = req.query;
 
   // Try to get from cache first
-  const cacheKey = `content:all:${page}:${limit}:${category}:${difficulty}:${isPublished}:${createdBy}`;
+  const cacheKey = `content:all:${page}:${limit}:${categorySlug}:${difficulty}:${isPublished}:${createdBy}`;
   const cachedContent = await redisUtils.get(cacheKey);
   
   if (cachedContent) {
@@ -467,7 +381,16 @@ const getAllContent = asyncHandler(async (req, res) => {
 
   // Build query
   const query = {};
-  if (category) query.category = category;
+  
+  // Validate ObjectId format for createdBy parameter
+  if (createdBy && !mongoose.Types.ObjectId.isValid(createdBy)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid createdBy ID format'
+    });
+  }
+  
+  if (categorySlug) query.categorySlug = categorySlug;
   if (difficulty) query.difficulty = difficulty;
   if (isPublished !== undefined) query.isPublished = isPublished === 'true';
   if (createdBy) query.createdBy = createdBy;
@@ -479,7 +402,6 @@ const getAllContent = asyncHandler(async (req, res) => {
 
   // Get content with pagination
   const content = await LearningContent.find(query)
-    .populate('category', 'name slug icon color')
     .populate('createdBy', 'fullName email')
     .populate('videos.videoId', 'title description cloudinaryUrl duration')
     .sort({ createdAt: -1 })
@@ -512,6 +434,14 @@ const updateContent = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
 
+  // Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid content ID format'
+    });
+  }
+
   // Check if content exists and user owns it
   const content = await LearningContent.findById(id);
   if (!content) {
@@ -534,7 +464,6 @@ const updateContent = asyncHandler(async (req, res) => {
     updateData,
     { new: true, runValidators: true }
   )
-    .populate('category', 'name slug icon color')
     .populate('createdBy', 'fullName email')
     .populate('videos.videoId', 'title description cloudinaryUrl duration');
 
@@ -553,6 +482,14 @@ const updateContent = asyncHandler(async (req, res) => {
 // Delete learning content
 const deleteContent = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  // Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid content ID format'
+    });
+  }
 
   // Check if content exists and user owns it
   const content = await LearningContent.findById(id);
@@ -619,7 +556,7 @@ const getLearningStats = asyncHandler(async (req, res) => {
     { $match: { createdBy: userId } },
     {
       $group: {
-        _id: '$category',
+        _id: '$categorySlug',
         count: { $sum: 1 },
         totalViews: { $sum: '$views' }
       }
@@ -660,11 +597,6 @@ const getLearningStats = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  // Category functions
-  createCategory,
-  getCategories,
-  updateCategory,
-  
   // Content functions
   createContent,
   getContentByCategory,

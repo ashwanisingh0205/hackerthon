@@ -16,6 +16,7 @@ const quizRoutes = require('./routes/quizzes');
 const pointsRoutes = require('./routes/points');
 const budgetRoutes = require('./routes/budgets');
 const learningRoutes = require('./routes/learning');
+const financialLearningRoutes = require('./routes/financialLearning');
 
 // Initialize express
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/points', pointsRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/learning', learningRoutes);
+app.use('/api/financial', financialLearningRoutes);
 
 /**
  * @swagger
