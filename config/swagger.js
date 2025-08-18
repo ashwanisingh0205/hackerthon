@@ -512,6 +512,228 @@ const options = {
               example: ['Understand tax planning basics', 'Learn optimization strategies']
             }
           }
+        },
+        AdminLoginRequest: {
+          type: 'object',
+          required: ['username', 'password'],
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Admin username',
+              minLength: 3,
+              maxLength: 50,
+              example: 'admin123'
+            },
+            password: {
+              type: 'string',
+              description: 'Admin password',
+              minLength: 6,
+              example: 'password123'
+            }
+          }
+        },
+        AdminLoginResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Admin login successful'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                admin: {
+                  type: 'object',
+                  properties: {
+                    id: {
+                      type: 'string',
+                      example: '507f1f77bcf86cd799439011'
+                    },
+                    username: {
+                      type: 'string',
+                      example: 'admin123'
+                    },
+                    fullName: {
+                      type: 'string',
+                      example: 'John Admin'
+                    },
+                    email: {
+                      type: 'string',
+                      example: 'admin@example.com'
+                    },
+                    role: {
+                      type: 'string',
+                      enum: ['super_admin', 'admin', 'moderator'],
+                      example: 'admin'
+                    },
+                    permissions: {
+                      type: 'array',
+                      items: {
+                        type: 'string'
+                      },
+                      example: ['manage_content', 'manage_users']
+                    },
+                    isActive: {
+                      type: 'boolean',
+                      example: true
+                    },
+                    lastLogin: {
+                      type: 'string',
+                      format: 'date-time',
+                      example: '2025-08-18T05:14:06.210Z'
+                    }
+                  }
+                },
+                accessToken: {
+                  type: 'string',
+                  description: 'JWT access token for admin authentication',
+                  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                },
+                tokenType: {
+                  type: 'string',
+                  example: 'Bearer'
+                },
+                expiresIn: {
+                  type: 'string',
+                  example: '15m'
+                }
+              }
+            }
+          }
+        },
+        AdminProfileResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Admin profile retrieved successfully'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                  example: '507f1f77bcf86cd799439011'
+                },
+                username: {
+                  type: 'string',
+                  example: 'admin123'
+                },
+                fullName: {
+                  type: 'string',
+                  example: 'John Admin'
+                },
+                email: {
+                  type: 'string',
+                  example: 'admin@example.com'
+                },
+                role: {
+                  type: 'string',
+                  enum: ['super_admin', 'admin', 'moderator'],
+                  example: 'admin'
+                },
+                permissions: {
+                  type: 'array',
+                  items: {
+                    type: 'string'
+                  },
+                  example: ['manage_content', 'manage_users']
+                },
+                isActive: {
+                  type: 'boolean',
+                  example: true
+                },
+                lastLogin: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2025-08-18T05:14:06.210Z'
+                },
+                createdAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2025-08-18T05:00:00.000Z'
+                },
+                updatedAt: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2025-08-18T05:14:06.210Z'
+                }
+              }
+            }
+          }
+        },
+        CreateAdminRequest: {
+          type: 'object',
+          required: ['username', 'password', 'fullName', 'email'],
+          properties: {
+            username: {
+              type: 'string',
+              description: 'Admin username',
+              minLength: 3,
+              maxLength: 50,
+              example: 'newadmin'
+            },
+            password: {
+              type: 'string',
+              description: 'Admin password',
+              minLength: 6,
+              example: 'newpassword123'
+            },
+            fullName: {
+              type: 'string',
+              description: 'Admin full name',
+              maxLength: 100,
+              example: 'Jane Admin'
+            },
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Admin email address',
+              example: 'jane.admin@example.com'
+            },
+            role: {
+              type: 'string',
+              enum: ['super_admin', 'admin', 'moderator'],
+              default: 'admin',
+              description: 'Admin role'
+            },
+            permissions: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['manage_users', 'manage_content', 'manage_admins', 'view_analytics', 'manage_settings']
+              },
+              description: 'Admin permissions',
+              example: ['manage_content', 'manage_users']
+            }
+          }
+        },
+        AllAdminsResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'All admins retrieved successfully'
+            },
+            data: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/AdminProfileResponse'
+              }
+            }
+          }
         }
       }
     }
