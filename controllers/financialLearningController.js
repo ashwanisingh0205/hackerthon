@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const asyncHandler = require('../utils/asyncHandler');
-const { redisUtils } = require('../config/redis');
 
 // Import all financial learning models
 require('../models/FinanceBasics');
@@ -64,10 +63,6 @@ const createFinanceBasics = asyncHandler(async (req, res) => {
 
     console.log('✅ Content created successfully:', createdContent._id);
 
-    // Invalidate cache
-    await redisUtils.delPattern('cache:*/finance-basics*');
-    console.log('🗑️ Cache invalidated');
-
     res.status(201).json({
       success: true,
       message: 'Finance basics content created successfully',
@@ -89,19 +84,6 @@ const getFinanceBasics = asyncHandler(async (req, res) => {
 
   try {
     console.log('🔍 Fetching finance basics with query:', { page, limit, difficulty });
-    
-    // Try to get from cache first
-    const cacheKey = `finance-basics:${page}:${limit}:${difficulty}`;
-    const cachedContent = await redisUtils.get(cacheKey);
-    
-    if (cachedContent) {
-      console.log('📦 Finance basics served from cache');
-      return res.json({
-        success: true,
-        data: cachedContent,
-        fromCache: true
-      });
-    }
 
     // Build query
     const query = {};
@@ -137,13 +119,9 @@ const getFinanceBasics = asyncHandler(async (req, res) => {
       }
     };
 
-    // Cache for 1 hour
-    await redisUtils.set(cacheKey, responseData, 3600);
-
     res.json({
       success: true,
-      data: responseData,
-      fromCache: false
+      data: responseData
     });
   } catch (error) {
     console.error('❌ Error in getFinanceBasics:', error);
@@ -236,8 +214,7 @@ const createSIPLearning = asyncHandler(async (req, res) => {
     views: 0
   });
 
-  // Invalidate cache
-  await redisUtils.delPattern('cache:*/sip-learning*');
+
 
   res.status(201).json({
     success: true,
@@ -250,18 +227,7 @@ const createSIPLearning = asyncHandler(async (req, res) => {
 const getSIPLearning = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, difficulty } = req.query;
 
-  // Try to get from cache first
-  const cacheKey = `sip-learning:${page}:${limit}:${difficulty}`;
-  const cachedContent = await redisUtils.get(cacheKey);
-  
-  if (cachedContent) {
-    console.log('📦 SIP learning served from cache');
-    return res.json({
-      success: true,
-      data: cachedContent,
-      fromCache: true
-    });
-  }
+
 
   // Build query
   const query = {};
@@ -291,14 +257,10 @@ const getSIPLearning = asyncHandler(async (req, res) => {
     }
   };
 
-  // Cache for 1 hour
-  await redisUtils.set(cacheKey, responseData, 3600);
-
-  res.json({
-    success: true,
-    data: responseData,
-    fromCache: false
-  });
+res.json({
+  success: true,
+  data: responseData
+});
 });
 
 // ===== MUTUAL FUNDS MODULE =====
@@ -346,8 +308,7 @@ const createMutualFunds = asyncHandler(async (req, res) => {
     views: 0
   });
 
-  // Invalidate cache
-  await redisUtils.delPattern('cache:*/mutual-funds*');
+
 
   res.status(201).json({
     success: true,
@@ -360,18 +321,7 @@ const createMutualFunds = asyncHandler(async (req, res) => {
 const getMutualFunds = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, difficulty } = req.query;
 
-  // Try to get from cache first
-  const cacheKey = `mutual-funds:${page}:${limit}:${difficulty}`;
-  const cachedContent = await redisUtils.get(cacheKey);
-  
-  if (cachedContent) {
-    console.log('📦 Mutual funds served from cache');
-    return res.json({
-      success: true,
-      data: cachedContent,
-      fromCache: true
-    });
-  }
+
 
   // Build query
   const query = {};
@@ -401,13 +351,9 @@ const getMutualFunds = asyncHandler(async (req, res) => {
     }
   };
 
-  // Cache for 1 hour
-  await redisUtils.set(cacheKey, responseData, 3600);
-
   res.json({
     success: true,
-    data: responseData,
-    fromCache: false
+    data: responseData
   });
 });
 
@@ -456,8 +402,7 @@ const createFraudAwareness = asyncHandler(async (req, res) => {
     views: 0
   });
 
-  // Invalidate cache
-  await redisUtils.delPattern('cache:*/fraud-awareness*');
+
 
   res.status(201).json({
     success: true,
@@ -470,18 +415,7 @@ const createFraudAwareness = asyncHandler(async (req, res) => {
 const getFraudAwareness = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, difficulty } = req.query;
 
-  // Try to get from cache first
-  const cacheKey = `fraud-awareness:${page}:${limit}:${difficulty}`;
-  const cachedContent = await redisUtils.get(cacheKey);
-  
-  if (cachedContent) {
-    console.log('📦 Fraud awareness served from cache');
-    return res.json({
-      success: true,
-      data: cachedContent,
-      fromCache: true
-    });
-  }
+
 
   // Build query
   const query = {};
@@ -511,13 +445,9 @@ const getFraudAwareness = asyncHandler(async (req, res) => {
     }
   };
 
-  // Cache for 1 hour
-  await redisUtils.set(cacheKey, responseData, 3600);
-
   res.json({
     success: true,
-    data: responseData,
-    fromCache: false
+    data: responseData
   });
 });
 
@@ -566,8 +496,7 @@ const createTaxPlanning = asyncHandler(async (req, res) => {
     views: 0
   });
 
-  // Invalidate cache
-  await redisUtils.delPattern('cache:*/tax-planning*');
+
 
   res.status(201).json({
     success: true,
@@ -580,18 +509,7 @@ const createTaxPlanning = asyncHandler(async (req, res) => {
 const getTaxPlanning = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, difficulty } = req.query;
 
-  // Try to get from cache first
-  const cacheKey = `tax-planning:${page}:${limit}:${difficulty}`;
-  const cachedContent = await redisUtils.get(cacheKey);
-  
-  if (cachedContent) {
-    console.log('📦 Tax planning served from cache');
-    return res.json({
-      success: true,
-      data: cachedContent,
-      fromCache: true
-    });
-  }
+
 
   // Build query
   const query = {};
@@ -621,13 +539,9 @@ const getTaxPlanning = asyncHandler(async (req, res) => {
     }
   };
 
-  // Cache for 1 hour
-  await redisUtils.set(cacheKey, responseData, 3600);
-
   res.json({
     success: true,
-    data: responseData,
-    fromCache: false
+    data: responseData
   });
 });
 
