@@ -42,6 +42,44 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Password cannot contain spaces'
     }
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
+  blockedAt: {
+    type: Date,
+    default: null
+  },
+  blockedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    default: null
+  },
+  blockReason: {
+    type: String,
+    default: null
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
+  deletedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    default: null
+  },
+  deleteReason: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

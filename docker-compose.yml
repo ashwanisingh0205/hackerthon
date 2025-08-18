@@ -10,7 +10,7 @@ services:
       - PORT=8000
       - MONGODB_URI=mongodb+srv://ashwanikumar13628:Ashwani151717@cluster0.tgfgv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - JWT_SECRET=your-secret-key-change-in-production
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:5173
       - CLOUDINARY_CLOUD_NAME=dn2bkta45
       - CLOUDINARY_API_KEY=892636761354991
       - CLOUDINARY_API_SECRET=luPdrJkWF6Z3Rm93PVOrPASax64

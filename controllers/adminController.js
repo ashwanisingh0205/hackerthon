@@ -194,9 +194,213 @@ const getAllAdmins = asyncHandler(async (req, res) => {
   }
 });
 
+// Get all users (admin only)
+const getAllUsers = asyncHandler(async (req, res) => {
+  try {
+    // Check if current admin has permission to view users
+    if (!req.admin.permissions.includes('manage_users')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions to view users'
+      });
+    }
+
+    // Import User model dynamically to avoid circular dependencies
+    const User = require('../models/User');
+    
+    const { page = 1, limit = 10, search } = req.query;
+    
+    // Build query
+    const query = { isDeleted: { $ne: true } }; // Exclude deleted users
+    if (search) {
+      query.$or = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    const totalUsers = await User.countDocuments(query);
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    // Get users with pagination
+    const users = await User.find(query)
+      .select('fullName email mobileNumber createdAt isActive isBlocked blockedAt blockReason')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const responseData = {
+      users,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalUsers,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Users retrieved successfully',
+      data: responseData
+    });
+
+  } catch (error) {
+    console.error('❌ Get all users error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve users',
+      details: error.message
+    });
+  }
+});
+
+// Block/Unblock user (admin only)
+const toggleUserBlock = asyncHandler(async (req, res) => {
+  try {
+    // Check if current admin has permission to manage users
+    if (!req.admin.permissions.includes('manage_users')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions to manage users'
+      });
+    }
+
+    const { userId } = req.params;
+    const { action } = req.body; // 'block' or 'unblock'
+
+    // Validate action
+    if (!['block', 'unblock'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Action must be either "block" or "unblock"'
+      });
+    }
+
+    // Import User model dynamically to avoid circular dependencies
+    const User = require('../models/User');
+    
+    // Find user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Prevent blocking admin users
+    if (user.role === 'admin' || user.role === 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Cannot block admin users'
+      });
+    }
+
+    // Toggle user block status
+    const isBlocked = action === 'block';
+    user.isBlocked = isBlocked;
+    user.blockedAt = isBlocked ? new Date() : null;
+    user.blockedBy = isBlocked ? req.admin._id : null;
+    user.blockReason = isBlocked ? req.body.reason || 'No reason provided' : null;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: `User ${action === 'block' ? 'blocked' : 'unblocked'} successfully`,
+      data: {
+        userId: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        isBlocked: user.isBlocked,
+        blockedAt: user.blockedAt,
+        blockReason: user.blockReason
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Toggle user block error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to toggle user block status',
+      details: error.message
+    });
+  }
+});
+
+// Delete user (admin only)
+const deleteUser = asyncHandler(async (req, res) => {
+  try {
+    // Check if current admin has permission to manage users
+    if (!req.admin.permissions.includes('manage_users')) {
+      return res.status(403).json({
+        success: false,
+        error: 'Insufficient permissions to manage users'
+      });
+    }
+
+    const { userId } = req.params;
+
+    // Import User model dynamically to avoid circular dependencies
+    const User = require('../models/User');
+    
+    // Find user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Prevent deleting admin users
+    if (user.role === 'admin' || user.role === 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Cannot delete admin users'
+      });
+    }
+
+    // Soft delete - mark as deleted instead of removing from database
+    user.isDeleted = true;
+    user.deletedAt = new Date();
+    user.deletedBy = req.admin._id;
+    user.deleteReason = req.body.reason || 'No reason provided';
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully',
+      data: {
+        userId: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        deletedAt: user.deletedAt,
+        deleteReason: user.deleteReason
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete user',
+      details: error.message
+    });
+  }
+});
+
 module.exports = {
   adminLogin,
   getAdminProfile,
   createAdmin,
-  getAllAdmins
+  getAllAdmins,
+  getAllUsers,
+  toggleUserBlock,
+  deleteUser
 };

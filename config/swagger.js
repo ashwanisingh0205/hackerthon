@@ -734,6 +734,98 @@ const options = {
               }
             }
           }
+        },
+        AllUsersResponse: {
+          type: 'object',
+          properties: {
+            success: {
+              type: 'boolean',
+              example: true
+            },
+            message: {
+              type: 'string',
+              example: 'Users retrieved successfully'
+            },
+            data: {
+              type: 'object',
+              properties: {
+                users: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      _id: {
+                        type: 'string',
+                        example: '507f1f77bcf86cd799439011'
+                      },
+                                             fullName: {
+                         type: 'string',
+                         example: 'John Doe'
+                       },
+                       email: {
+                         type: 'string',
+                         format: 'email',
+                         example: 'john.doe@example.com'
+                       },
+                       mobileNumber: {
+                         type: 'string',
+                         example: '+1234567890'
+                       },
+                       createdAt: {
+                         type: 'string',
+                         format: 'date-time',
+                         example: '2025-08-18T05:00:00.000Z'
+                       },
+                       isActive: {
+                         type: 'boolean',
+                         example: true
+                       },
+                       isBlocked: {
+                         type: 'boolean',
+                         example: false
+                       },
+                       blockedAt: {
+                         type: 'string',
+                         format: 'date-time',
+                         nullable: true,
+                         example: null
+                       },
+                       blockReason: {
+                         type: 'string',
+                         nullable: true,
+                         example: null
+                       }
+                    }
+                  }
+                },
+                pagination: {
+                  type: 'object',
+                  properties: {
+                    currentPage: {
+                      type: 'integer',
+                      example: 1
+                    },
+                    totalPages: {
+                      type: 'integer',
+                      example: 5
+                    },
+                    totalUsers: {
+                      type: 'integer',
+                      example: 50
+                    },
+                    hasNextPage: {
+                      type: 'boolean',
+                      example: true
+                    },
+                    hasPrevPage: {
+                      type: 'boolean',
+                      example: false
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

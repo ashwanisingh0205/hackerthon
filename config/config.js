@@ -17,7 +17,7 @@ const config = {
   jwtExpiresIn: '30d', // 30 days
   
   // CORS Configuration
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  corsOrigin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:5173'],
   
   // Rate Limiting
   rateLimitWindowMs: 15 * 60 * 1000, // 15 minutes
