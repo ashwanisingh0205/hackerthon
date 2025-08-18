@@ -429,6 +429,89 @@ const options = {
               format: 'date-time'
             }
           }
+        },
+        FinancialLearningContent: {
+          type: 'object',
+          required: ['title', 'description', 'content', 'videoUrl'],
+          properties: {
+            title: {
+              type: 'string',
+              description: 'Title of the learning content',
+              maxLength: 200,
+              example: 'Introduction to Tax Planning'
+            },
+            description: {
+              type: 'string',
+              description: 'Brief description of the content',
+              maxLength: 1000,
+              example: 'Learn the basics of tax planning and optimization strategies'
+            },
+            content: {
+              type: 'string',
+              description: 'Main content of the learning material',
+              maxLength: 10000,
+              example: 'Tax planning is a crucial aspect of financial management...'
+            },
+            detailedContent: {
+              type: 'string',
+              description: 'Detailed and comprehensive content of the learning material',
+              maxLength: 50000,
+              example: 'This comprehensive guide covers all aspects of tax planning including...'
+            },
+            videoUrl: {
+              type: 'string',
+              description: 'URL to the associated video content',
+              example: 'https://example.com/video/tax-planning-intro'
+            },
+            videoTitle: {
+              type: 'string',
+              description: 'Title of the video',
+              maxLength: 200,
+              example: 'Tax Planning Introduction Video'
+            },
+            videoDescription: {
+              type: 'string',
+              description: 'Description of the video content',
+              maxLength: 500,
+              example: 'Comprehensive video guide on tax planning basics'
+            },
+            difficulty: {
+              type: 'string',
+              enum: ['beginner', 'intermediate', 'advanced'],
+              default: 'beginner',
+              description: 'Difficulty level of the content'
+            },
+            estimatedTime: {
+              type: 'number',
+              description: 'Estimated time to complete in minutes',
+              minimum: 1,
+              example: 30
+            },
+            tags: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              description: 'Tags for categorizing content',
+              example: ['tax', 'planning', 'finance', 'beginners']
+            },
+            prerequisites: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              description: 'Prerequisites for understanding this content',
+              example: ['Basic financial knowledge', 'Understanding of income sources']
+            },
+            learningObjectives: {
+              type: 'array',
+              items: {
+                type: 'string'
+              },
+              description: 'Learning objectives for this content',
+              example: ['Understand tax planning basics', 'Learn optimization strategies']
+            }
+          }
         }
       }
     }

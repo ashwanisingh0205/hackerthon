@@ -1,4 +1,5 @@
-require('dotenv').config();
+// Temporarily comment out dotenv to let docker-compose environment variables take precedence
+// require('dotenv').config();
 
 const config = {
   // Server Configuration

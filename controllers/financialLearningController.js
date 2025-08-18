@@ -21,6 +21,8 @@ const createFinanceBasics = asyncHandler(async (req, res) => {
     const {
       title,
       description,
+      content,
+      detailedContent,
       videoUrl,
       videoTitle,
       videoDescription,
@@ -32,20 +34,22 @@ const createFinanceBasics = asyncHandler(async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!title || !description || !videoUrl) {
+    if (!title || !description || !content || !videoUrl) {
       console.log('❌ Validation failed - missing required fields');
       return res.status(400).json({
         success: false,
-        error: 'Title, description, and video URL are required'
+        error: 'Title, description, content, and video URL are required'
       });
     }
 
     console.log('✅ Validation passed, creating content...');
 
     // Create finance basics content
-    const content = await mongoose.model('FinanceBasics').create({
+    const createdContent = await mongoose.model('FinanceBasics').create({
       title,
       description,
+      content,
+      detailedContent,
       videoUrl,
       videoTitle: videoTitle || title,
       videoDescription: videoDescription || description,
@@ -58,7 +62,7 @@ const createFinanceBasics = asyncHandler(async (req, res) => {
       views: 0
     });
 
-    console.log('✅ Content created successfully:', content._id);
+    console.log('✅ Content created successfully:', createdContent._id);
 
     // Invalidate cache
     await redisUtils.delPattern('cache:*/finance-basics*');
@@ -67,7 +71,7 @@ const createFinanceBasics = asyncHandler(async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Finance basics content created successfully',
-      data: content
+      data: createdContent
     });
   } catch (error) {
     console.error('❌ Error creating finance basics content:', error);
@@ -194,6 +198,8 @@ const createSIPLearning = asyncHandler(async (req, res) => {
   const {
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle,
     videoDescription,
@@ -205,17 +211,19 @@ const createSIPLearning = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!title || !description || !videoUrl) {
+  if (!title || !description || !content || !videoUrl) {
     return res.status(400).json({
       success: false,
-      error: 'Title, description, and video URL are required'
+      error: 'Title, description, content, and video URL are required'
     });
   }
 
   // Create SIP learning content
-  const content = await mongoose.model('SIPLearning').create({
+  const createdContent = await mongoose.model('SIPLearning').create({
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle: videoTitle || title,
     videoDescription: videoDescription || description,
@@ -234,7 +242,7 @@ const createSIPLearning = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'SIP learning content created successfully',
-    data: content
+    data: createdContent
   });
 });
 
@@ -300,6 +308,8 @@ const createMutualFunds = asyncHandler(async (req, res) => {
   const {
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle,
     videoDescription,
@@ -311,17 +321,19 @@ const createMutualFunds = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!title || !description || !videoUrl) {
+  if (!title || !description || !content || !videoUrl) {
     return res.status(400).json({
       success: false,
-      error: 'Title, description, and video URL are required'
+      error: 'Title, description, content, and video URL are required'
     });
   }
 
   // Create mutual funds content
-  const content = await mongoose.model('MutualFunds').create({
+  const createdContent = await mongoose.model('MutualFunds').create({
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle: videoTitle || title,
     videoDescription: videoDescription || description,
@@ -340,7 +352,7 @@ const createMutualFunds = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'Mutual funds content created successfully',
-    data: content
+    data: createdContent
   });
 });
 
@@ -406,6 +418,8 @@ const createFraudAwareness = asyncHandler(async (req, res) => {
   const {
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle,
     videoDescription,
@@ -417,17 +431,19 @@ const createFraudAwareness = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!title || !description || !videoUrl) {
+  if (!title || !description || !content || !videoUrl) {
     return res.status(400).json({
       success: false,
-      error: 'Title, description, and video URL are required'
+      error: 'Title, description, content, and video URL are required'
     });
   }
 
   // Create fraud awareness content
-  const content = await mongoose.model('FraudAwareness').create({
+  const createdContent = await mongoose.model('FraudAwareness').create({
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle: videoTitle || title,
     videoDescription: videoDescription || description,
@@ -446,7 +462,7 @@ const createFraudAwareness = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'Fraud awareness content created successfully',
-    data: content
+    data: createdContent
   });
 });
 
@@ -512,6 +528,8 @@ const createTaxPlanning = asyncHandler(async (req, res) => {
   const {
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle,
     videoDescription,
@@ -523,17 +541,19 @@ const createTaxPlanning = asyncHandler(async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!title || !description || !videoUrl) {
+  if (!title || !description || !content || !videoUrl) {
     return res.status(400).json({
       success: false,
-      error: 'Title, description, and video URL are required'
+      error: 'Title, description, content, and video URL are required'
     });
   }
 
   // Create tax planning content
-  const content = await mongoose.model('TaxPlanning').create({
+  const createdContent = await mongoose.model('TaxPlanning').create({
     title,
     description,
+    content,
+    detailedContent,
     videoUrl,
     videoTitle: videoTitle || title,
     videoDescription: videoDescription || description,
@@ -552,7 +572,7 @@ const createTaxPlanning = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'Tax planning content created successfully',
-    data: content
+    data: createdContent
   });
 });
 

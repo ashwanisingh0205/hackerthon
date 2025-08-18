@@ -8,6 +8,9 @@ const config = require('./config/config');
 const errorHandler = require('./middleware/errorHandler');
 const swaggerSpecs = require('./config/swagger');
 
+// Initialize Redis
+const { initRedis } = require('./config/redis');
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const fileRoutes = require('./routes/files');
@@ -23,6 +26,9 @@ const app = express();
 
 // Connect to database
 connectDB();
+
+// Initialize Redis
+initRedis();
 
 // Security middleware
 app.use(helmet());

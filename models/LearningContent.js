@@ -11,6 +11,11 @@ const learningContentSchema = new mongoose.Schema({
     type: String,
     trim: true,
     maxlength: [1000, 'Description cannot exceed 1000 characters']
+  },content: {
+    type: String,
+    required: [true, 'Content is required'],
+    trim: true,
+    maxlength: [10000, 'Content cannot exceed 10000 characters']
   },
   categorySlug: {
     type: String,

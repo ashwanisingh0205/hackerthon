@@ -1,20 +1,15 @@
 const Redis = require('ioredis');
-require('dotenv').config();
 
-// Redis configuration
+// Simple Redis configuration
 const redisConfig = {
   host: process.env.REDIS_HOST || 'localhost',
   port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD,
+  password: process.env.REDIS_PASSWORD || undefined,
   db: process.env.REDIS_DB || 0,
-  retryDelayOnFailover: 100,
-  maxRetriesPerRequest: 3,
-  lazyConnect: true,
-  showFriendlyErrorStack: process.env.NODE_ENV === 'development',
-  // Add connection timeout and retry settings
   connectTimeout: 5000,
-  maxRetriesPerRequest: 3,
-  retryDelayOnFailover: 100
+  lazyConnect: false,
+  retryDelayOnFailover: 100,
+  maxRetriesPerRequest: 3
 };
 
 // Create Redis client
@@ -24,96 +19,69 @@ let redisAvailable = false;
 // Initialize Redis connection
 const initRedis = () => {
   try {
-    if (!redisClient) {
-      redisClient = new Redis(redisConfig);
-      
-      redisClient.on('connect', () => {
-        console.log('✅ Redis connected successfully');
-        redisAvailable = true;
-      });
-      
-      redisClient.on('ready', () => {
-        console.log('✅ Redis is ready');
-        redisAvailable = true;
-      });
-      
-      redisClient.on('error', (err) => {
-        console.error('❌ Redis connection error:', err);
-        redisAvailable = false;
-      });
-      
-      redisClient.on('close', () => {
-        console.log('🔌 Redis connection closed');
-        redisAvailable = false;
-      });
+    console.log('🔌 Connecting to Redis...');
+    console.log('🔌 Redis config:', { host: redisConfig.host, port: redisConfig.port, db: redisConfig.db });
+    
+    redisClient = new Redis(redisConfig);
+    
+    redisClient.on('connect', () => {
+      console.log('✅ Redis connected successfully');
+      redisAvailable = true;
+    });
+    
+    redisClient.on('ready', () => {
+      console.log('✅ Redis is ready');
+      redisAvailable = true;
+    });
+    
+    redisClient.on('error', (err) => {
+      console.error('❌ Redis error:', err.message);
+      redisAvailable = false;
+    });
+    
+    redisClient.on('close', () => {
+      console.log('🔌 Redis connection closed');
+      redisAvailable = false;
+    });
 
-      redisClient.on('end', () => {
-        console.log('🔌 Redis connection ended');
-        redisAvailable = false;
-      });
+    redisClient.on('end', () => {
+      console.log('🔌 Redis connection ended');
+      redisAvailable = false;
+    });
 
-      // Set a timeout for initial connection
-      setTimeout(() => {
-        if (!redisAvailable) {
-          console.log('⚠️ Redis connection timeout - continuing without Redis');
-        }
-      }, 5000);
-    }
+    // Test connection with ping
+    redisClient.ping().then(() => {
+      console.log('✅ Redis ping successful');
+      redisAvailable = true;
+    }).catch((err) => {
+      console.error('❌ Redis ping failed:', err.message);
+      redisAvailable = false;
+    });
+
     return redisClient;
   } catch (error) {
-    console.error('❌ Failed to initialize Redis:', error);
-    console.log('⚠️ Continuing without Redis - caching will be disabled');
+    console.error('❌ Failed to initialize Redis:', error.message);
     return null;
   }
 };
 
-// In-memory fallback cache when Redis is not available
-const memoryCache = new Map();
-const memoryCacheTTL = new Map();
-
-// Clean up expired memory cache entries
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, expiry] of memoryCacheTTL.entries()) {
-    if (now > expiry) {
-      memoryCache.delete(key);
-      memoryCacheTTL.delete(key);
-    }
-  }
-}, 60000); // Clean up every minute
-
-// Redis utility functions with fallback
+// Simple Redis utilities
 const redisUtils = {
+  // Check if Redis is available
+  isAvailable() {
+    return redisAvailable && redisClient && redisClient.status === 'ready';
+  },
+
   // Get value from cache
   async get(key) {
     try {
-      if (redisAvailable && redisClient) {
+      if (this.isAvailable()) {
         const value = await redisClient.get(key);
         return value ? JSON.parse(value) : null;
-      } else {
-        // Fallback to memory cache
-        const cached = memoryCache.get(key);
-        if (cached) {
-          const expiry = memoryCacheTTL.get(key);
-          if (Date.now() < expiry) {
-            return cached;
-          } else {
-            memoryCache.delete(key);
-            memoryCacheTTL.delete(key);
-          }
-        }
-        return null;
       }
+      return null;
     } catch (error) {
-      console.error('Cache GET error:', error);
-      // Fallback to memory cache
-      const cached = memoryCache.get(key);
-      if (cached) {
-        const expiry = memoryCacheTTL.get(key);
-        if (Date.now() < expiry) {
-          return cached;
-        }
-      }
+      console.error('Redis GET error:', error.message);
       return null;
     }
   },
@@ -121,7 +89,7 @@ const redisUtils = {
   // Set value in cache with expiration
   async set(key, value, expireSeconds = 3600) {
     try {
-      if (redisAvailable && redisClient) {
+      if (this.isAvailable()) {
         const serializedValue = JSON.stringify(value);
         if (expireSeconds > 0) {
           await redisClient.setex(key, expireSeconds, serializedValue);
@@ -129,111 +97,69 @@ const redisUtils = {
           await redisClient.set(key, serializedValue);
         }
         return true;
-      } else {
-        // Fallback to memory cache
-        memoryCache.set(key, value);
-        if (expireSeconds > 0) {
-          memoryCacheTTL.set(key, Date.now() + (expireSeconds * 1000));
-        }
-        return true;
       }
+      return false;
     } catch (error) {
-      console.error('Cache SET error:', error);
-      // Fallback to memory cache
-      memoryCache.set(key, value);
-      if (expireSeconds > 0) {
-        memoryCacheTTL.set(key, Date.now() + (expireSeconds * 1000));
-      }
-      return true;
+      console.error('Redis SET error:', error.message);
+      return false;
     }
   },
 
   // Delete key from cache
   async del(key) {
     try {
-      if (redisAvailable && redisClient) {
+      if (this.isAvailable()) {
         await redisClient.del(key);
+        return true;
       }
-      // Also clear from memory cache
-      memoryCache.delete(key);
-      memoryCacheTTL.delete(key);
-      return true;
+      return false;
     } catch (error) {
-      console.error('Cache DEL error:', error);
-      // Clear from memory cache
-      memoryCache.delete(key);
-      memoryCacheTTL.delete(key);
-      return true;
+      console.error('Redis DEL error:', error.message);
+      return false;
     }
   },
 
   // Delete keys matching pattern
   async delPattern(pattern) {
     try {
-      if (redisAvailable && redisClient) {
+      if (this.isAvailable()) {
         const keys = await redisClient.keys(pattern);
         if (keys.length > 0) {
           await redisClient.del(...keys);
         }
+        return true;
       }
-      // Clear all memory cache (simple fallback)
-      memoryCache.clear();
-      memoryCacheTTL.clear();
-      return true;
+      return false;
     } catch (error) {
-      console.error('Cache DELPATTERN error:', error);
-      // Clear all memory cache
-      memoryCache.clear();
-      memoryCacheTTL.clear();
-      return true;
+      console.error('Redis DELPATTERN error:', error.message);
+      return false;
     }
   },
 
   // Hash operations
   async hset(key, field, value) {
     try {
-      if (redisAvailable && redisClient) {
+      if (this.isAvailable()) {
         await redisClient.hset(key, field, JSON.stringify(value));
         return true;
-      } else {
-        // Simple fallback - store as regular key
-        const hashKey = `${key}:${field}`;
-        memoryCache.set(hashKey, value);
-        return true;
       }
+      return false;
     } catch (error) {
-      console.error('Cache HSET error:', error);
-      const hashKey = `${key}:${field}`;
-      memoryCache.set(hashKey, value);
-      return true;
+      console.error('Redis HSET error:', error.message);
+      return false;
     }
   },
 
   async hincrby(key, field, increment) {
     try {
-      if (redisAvailable && redisClient) {
+      if (this.isAvailable()) {
         return await redisClient.hincrby(key, field, increment);
-      } else {
-        // Simple fallback - increment in memory
-        const hashKey = `${key}:${field}`;
-        const current = memoryCache.get(hashKey) || 0;
-        const newValue = current + increment;
-        memoryCache.set(hashKey, newValue);
-        return newValue;
       }
+      return 0;
     } catch (error) {
-      console.error('Cache HINCRBY error:', error);
-      const hashKey = `${key}:${field}`;
-      const current = memoryCache.get(hashKey) || 0;
-      const newValue = current + increment;
-      memoryCache.set(hashKey, newValue);
-      return newValue;
+      console.error('Redis HINCRBY error:', error.message);
+      return 0;
     }
-  },
-
-  // Check if Redis is available
-  isAvailable() {
-    return redisAvailable && redisClient && redisClient.status === 'ready';
   },
 
   // Close Redis connection
@@ -246,7 +172,7 @@ const redisUtils = {
         console.log('🔌 Redis connection closed gracefully');
       }
     } catch (error) {
-      console.error('Redis close error:', error);
+      console.error('Redis close error:', error.message);
     }
   }
 };

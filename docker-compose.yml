@@ -14,7 +14,7 @@ services:
       - CLOUDINARY_CLOUD_NAME=dn2bkta45
       - CLOUDINARY_API_KEY=892636761354991
       - CLOUDINARY_API_SECRET=luPdrJkWF6Z3Rm93PVOrPASax64
-      # Redis configuration (optional)
+      # Redis configuration (using local Docker Redis)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=

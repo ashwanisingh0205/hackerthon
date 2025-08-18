@@ -13,6 +13,18 @@ const mutualFundsSchema = new mongoose.Schema({
     trim: true,
     maxlength: [1000, 'Description cannot exceed 1000 characters']
   },
+  content: {
+    type: String,
+    required: [true, 'Content is required'],
+    trim: true,
+    maxlength: [10000, 'Content cannot exceed 10000 characters']
+  },
+  detailedContent: {
+    type: String,
+    required: [false, 'Detailed content is optional'],
+    trim: true,
+    maxlength: [50000, 'Detailed content cannot exceed 50000 characters']
+  },
   videoUrl: {
     type: String,
     required: [true, 'Video URL is required'],
