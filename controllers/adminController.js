@@ -211,7 +211,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search } = req.query;
     
     // Build query
-    const query = { isDeleted: { $ne: true } }; // Exclude deleted users
+    const query = {};
     if (search) {
       query.$or = [
         { fullName: { $regex: search, $options: 'i' } },
@@ -365,24 +365,20 @@ const deleteUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // Soft delete - mark as deleted instead of removing from database
-    user.isDeleted = true;
-    user.deletedAt = new Date();
-    user.deletedBy = req.admin._id;
-    user.deleteReason = req.body.reason || 'No reason provided';
+    // Store user info before deletion for response
+    const userInfo = {
+      userId: user._id,
+      fullName: user.fullName,
+      email: user.email
+    };
 
-    await user.save();
+    // Permanent delete - remove user from database
+    await User.findByIdAndDelete(userId);
 
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully',
-      data: {
-        userId: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        deletedAt: user.deletedAt,
-        deleteReason: user.deleteReason
-      }
+      message: 'User permanently deleted successfully',
+      data: userInfo
     });
 
   } catch (error) {

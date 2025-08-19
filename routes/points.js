@@ -8,7 +8,7 @@ const {
   updatePoints,
   deletePoints
 } = require('../controllers/pointsController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -327,21 +327,21 @@ const { authenticate } = require('../middleware/auth');
  */
 
 // @route   POST /api/points
-router.post('/', authenticate, addPoints);
+router.post('/', authenticateUserOrAdmin, addPoints);
 
 // @route   GET /api/points/user/:userId
-router.get('/user/:userId', authenticate, getUserPoints);
+router.get('/user/:userId', authenticateUserOrAdmin, getUserPoints);
 
 // @route   GET /api/points
-router.get('/', authenticate, getAllPoints);
+router.get('/', authenticateUserOrAdmin, getAllPoints);
 
 // @route   GET /api/points/summary/:userId
-router.get('/summary/:userId', authenticate, getPointsSummary);
+router.get('/summary/:userId', authenticateUserOrAdmin, getPointsSummary);
 
 // @route   PUT /api/points/:id
-router.put('/:id', authenticate, updatePoints);
+router.put('/:id', authenticateUserOrAdmin, updatePoints);
 
 // @route   DELETE /api/points/:id
-router.delete('/:id', authenticate, deletePoints);
+router.delete('/:id', authenticateUserOrAdmin, deletePoints);
 
 module.exports = router;

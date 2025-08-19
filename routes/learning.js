@@ -12,7 +12,7 @@ const {
   deleteContent, 
   getLearningStats
 } = require('../controllers/learningController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -561,30 +561,30 @@ const { authenticate } = require('../middleware/auth');
 // ===== LEARNING CONTENT =====
 
 // @route   POST /api/learning/content
-router.post('/content', authenticate, createContent);
+router.post('/content', authenticateUserOrAdmin, createContent);
 
 // @route   GET /api/learning/content
-router.get('/content', authenticate, getAllContent);
+router.get('/content', authenticateUserOrAdmin, getAllContent);
 
 // @route   GET /api/learning/content/category/:categorySlug
 router.get('/content/category/:categorySlug', getContentByCategory);
 
 // @route   GET /api/learning/content/:id
-router.get('/content/:id', authenticate, getContentById);
+router.get('/content/:id', authenticateUserOrAdmin, getContentById);
 
 // @route   PUT /api/learning/content/:id
-router.put('/content/:id', authenticate, updateContent);
+router.put('/content/:id', authenticateUserOrAdmin, updateContent);
 
 // @route   DELETE /api/learning/content/:id
-router.delete('/content/:id', authenticate, deleteContent);
+router.delete('/content/:id', authenticateUserOrAdmin, deleteContent);
 
 // @route   POST /api/learning/content/:id/videos
-router.post('/content/:id/videos', authenticate, addVideoToContent);
+router.post('/content/:id/videos', authenticateUserOrAdmin, addVideoToContent);
 
 // @route   DELETE /api/learning/content/:id/videos/:videoId
-router.delete('/content/:id/videos/:videoId', authenticate, removeVideoFromContent);
+router.delete('/content/:id/videos/:videoId', authenticateUserOrAdmin, removeVideoFromContent);
 
 // @route   GET /api/learning/stats
-router.get('/stats', authenticate, getLearningStats);
+router.get('/stats', authenticateUserOrAdmin, getLearningStats);
 
 module.exports = router;

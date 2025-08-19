@@ -11,7 +11,7 @@ const {
   getPublicBudgets,
   getBudgetStats
 } = require('../controllers/budgetController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -375,30 +375,30 @@ const { authenticate } = require('../middleware/auth');
  */
 
 // @route   POST /api/budgets
-router.post('/', authenticate, createBudget);
+router.post('/', authenticateUserOrAdmin, createBudget);
 
 // @route   GET /api/budgets
-router.get('/', authenticate, getUserBudgets);
+router.get('/', authenticateUserOrAdmin, getUserBudgets);
 
 // @route   GET /api/budgets/public
 router.get('/public', getPublicBudgets);
 
 // @route   GET /api/budgets/stats
-router.get('/stats', authenticate, getBudgetStats);
+router.get('/stats', authenticateUserOrAdmin, getBudgetStats);
 
 // @route   GET /api/budgets/:id
-router.get('/:id', authenticate, getBudgetById);
+router.get('/:id', authenticateUserOrAdmin, getBudgetById);
 
 // @route   PUT /api/budgets/:id
-router.put('/:id', authenticate, updateBudget);
+router.put('/:id', authenticateUserOrAdmin, updateBudget);
 
 // @route   DELETE /api/budgets/:id
-router.delete('/:id', authenticate, deleteBudget);
+router.delete('/:id', authenticateUserOrAdmin, deleteBudget);
 
 // @route   POST /api/budgets/:id/videos
-router.post('/:id/videos', authenticate, addVideoToBudget);
+router.post('/:id/videos', authenticateUserOrAdmin, addVideoToBudget);
 
 // @route   DELETE /api/budgets/:id/videos/:videoId
-router.delete('/:id/videos/:videoId', authenticate, removeVideoFromBudget);
+router.delete('/:id/videos/:videoId', authenticateUserOrAdmin, removeVideoFromBudget);
 
 module.exports = router;

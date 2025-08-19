@@ -22,7 +22,7 @@ const {
   createTaxPlanning,
   getTaxPlanning
 } = require('../controllers/financialLearningController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -151,7 +151,7 @@ const { authenticate } = require('../middleware/auth');
  */
 
 // @route   POST /api/financial/finance-basics
-router.post('/finance-basics', authenticate, createFinanceBasics);
+router.post('/finance-basics', authenticateUserOrAdmin, createFinanceBasics);
 
 // @route   GET /api/financial/finance-basics
 router.get('/finance-basics', getFinanceBasics);
@@ -216,7 +216,7 @@ router.get('/finance-basics/debug', getAllFinanceBasicsDebug);
  */
 
 // @route   POST /api/financial/sip-learning
-router.post('/sip-learning', authenticate, createSIPLearning);
+router.post('/sip-learning', authenticateUserOrAdmin, createSIPLearning);
 
 // @route   GET /api/financial/sip-learning
 router.get('/sip-learning', getSIPLearning);
@@ -278,7 +278,7 @@ router.get('/sip-learning', getSIPLearning);
  */
 
 // @route   POST /api/financial/mutual-funds
-router.post('/mutual-funds', authenticate, createMutualFunds);
+router.post('/mutual-funds', authenticateUserOrAdmin, createMutualFunds);
 
 // @route   GET /api/financial/mutual-funds
 router.get('/mutual-funds', getMutualFunds);
@@ -340,7 +340,7 @@ router.get('/mutual-funds', getMutualFunds);
  */
 
 // @route   POST /api/financial/fraud-awareness
-router.post('/fraud-awareness', authenticate, createFraudAwareness);
+router.post('/fraud-awareness', authenticateUserOrAdmin, createFraudAwareness);
 
 // @route   GET /api/financial/fraud-awareness
 router.get('/fraud-awareness', getFraudAwareness);
@@ -402,7 +402,7 @@ router.get('/fraud-awareness', getFraudAwareness);
  */
 
 // @route   POST /api/financial/tax-planning
-router.post('/tax-planning', authenticate, createTaxPlanning);
+router.post('/tax-planning', authenticateUserOrAdmin, createTaxPlanning);
 
 // @route   GET /api/financial/tax-planning
 router.get('/tax-planning', getTaxPlanning);

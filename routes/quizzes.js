@@ -9,7 +9,7 @@ const {
   deleteQuiz, 
   submitQuiz 
 } = require('../controllers/quizController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -365,24 +365,24 @@ const { authenticate } = require('../middleware/auth');
  */
 
 // @route   POST /api/quizzes
-router.post('/', authenticate, createQuiz);
+router.post('/', authenticateUserOrAdmin, createQuiz);
 
 // @route   GET /api/quizzes
-router.get('/', authenticate, getQuizzes);
+router.get('/', authenticateUserOrAdmin, getQuizzes);
 
 // @route   GET /api/quizzes/:id
-router.get('/:id', authenticate, getQuiz);
+router.get('/:id', authenticateUserOrAdmin, getQuiz);
 
 // @route   GET /api/quizzes/:id/answers
-router.get('/:id/answers', authenticate, getQuizWithAnswers);
+router.get('/:id/answers', authenticateUserOrAdmin, getQuizWithAnswers);
 
 // @route   POST /api/quizzes/:id/submit
-router.post('/:id/submit', authenticate, submitQuiz);
+router.post('/:id/submit', authenticateUserOrAdmin, submitQuiz);
 
 // @route   PUT /api/quizzes/:id
-router.put('/:id', authenticate, updateQuiz);
+router.put('/:id', authenticateUserOrAdmin, updateQuiz);
 
 // @route   DELETE /api/quizzes/:id
-router.delete('/:id', authenticate, deleteQuiz);
+router.delete('/:id', authenticateUserOrAdmin, deleteQuiz);
 
 module.exports = router;

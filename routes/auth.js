@@ -7,7 +7,7 @@ const {
   getCurrentUser,
   verifyToken
 } = require('../controllers/authController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -261,7 +261,7 @@ router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 
 // @route   GET /api/auth/me
-router.get('/me', authenticate, getCurrentUser);
+router.get('/me', authenticateUserOrAdmin, getCurrentUser);
 
 // @route   POST /api/auth/verify
 router.post('/verify', verifyToken);

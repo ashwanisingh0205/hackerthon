@@ -230,7 +230,7 @@ router.patch('/users/:userId/block', authenticateAdmin, requirePermission('manag
  * @swagger
  * /api/admin/users/{userId}/delete:
  *   delete:
- *     summary: Delete a user (admin only)
+ *     summary: Permanently delete a user (admin only)
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -241,18 +241,9 @@ router.patch('/users/:userId/block', authenticateAdmin, requirePermission('manag
  *         schema:
  *           type: string
  *         description: User ID to delete
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               reason:
- *                 type: string
- *                 description: Reason for deletion (optional)
  *     responses:
  *       200:
- *         description: User deleted successfully
+ *         description: User permanently deleted successfully
  *         content:
  *           application/json:
  *             schema:
@@ -263,7 +254,7 @@ router.patch('/users/:userId/block', authenticateAdmin, requirePermission('manag
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: User deleted successfully
+ *                   example: User permanently deleted successfully
  *                 data:
  *                   type: object
  *                   properties:
@@ -272,11 +263,6 @@ router.patch('/users/:userId/block', authenticateAdmin, requirePermission('manag
  *                     fullName:
  *                       type: string
  *                     email:
- *                       type: string
- *                     deletedAt:
- *                       type: string
- *                       format: date-time
- *                     deleteReason:
  *                       type: string
  *       401:
  *         description: Unauthorized - invalid token

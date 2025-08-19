@@ -8,7 +8,7 @@ const {
   deleteVideo, 
   getVideoStream 
 } = require('../controllers/videoController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 const { uploadVideo: uploadVideoMiddleware } = require('../config/cloudinary');
 
 /**
@@ -256,21 +256,21 @@ const { uploadVideo: uploadVideoMiddleware } = require('../config/cloudinary');
  */
 
 // @route   POST /api/videos/upload
-router.post('/upload', authenticate, uploadVideoMiddleware.single('video'), uploadVideo);
+router.post('/upload', authenticateUserOrAdmin, uploadVideoMiddleware.single('video'), uploadVideo);
 
 // @route   GET /api/videos
-router.get('/', authenticate, getVideos);
+router.get('/', authenticateUserOrAdmin, getVideos);
 
 // @route   GET /api/videos/:id
-router.get('/:id', authenticate, getVideo);
+router.get('/:id', authenticateUserOrAdmin, getVideo);
 
 // @route   GET /api/videos/:id/stream
-router.get('/:id/stream', authenticate, getVideoStream);
+router.get('/:id/stream', authenticateUserOrAdmin, getVideoStream);
 
 // @route   PUT /api/videos/:id
-router.put('/:id', authenticate, updateVideo);
+router.put('/:id', authenticateUserOrAdmin, updateVideo);
 
 // @route   DELETE /api/videos/:id
-router.delete('/:id', authenticate, deleteVideo);
+router.delete('/:id', authenticateUserOrAdmin, deleteVideo);
 
 module.exports = router;

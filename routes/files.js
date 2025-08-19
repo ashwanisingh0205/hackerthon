@@ -9,7 +9,7 @@ const {
   deleteFile, 
   updateFile 
 } = require('../controllers/fileController');
-const { authenticate } = require('../middleware/auth');
+const { authenticateUserOrAdmin } = require('../middleware/auth');
 const { uploadSingle, uploadMultiple, handleUploadError } = require('../middleware/upload');
 
 /**
@@ -280,24 +280,24 @@ const { uploadSingle, uploadMultiple, handleUploadError } = require('../middlewa
  */
 
 // @route   POST /api/files/upload
-router.post('/upload', authenticate, uploadSingle, handleUploadError, uploadFile);
+router.post('/upload', authenticateUserOrAdmin, uploadSingle, handleUploadError, uploadFile);
 
 // @route   POST /api/files/upload-multiple
-router.post('/upload-multiple', authenticate, uploadMultiple, handleUploadError, uploadMultipleFiles);
+router.post('/upload-multiple', authenticateUserOrAdmin, uploadMultiple, handleUploadError, uploadMultipleFiles);
 
 // @route   GET /api/files
-router.get('/', authenticate, getFiles);
+router.get('/', authenticateUserOrAdmin, getFiles);
 
 // @route   GET /api/files/:id
-router.get('/:id', authenticate, getFile);
+router.get('/:id', authenticateUserOrAdmin, getFile);
 
 // @route   GET /api/files/:id/download
-router.get('/:id/download', authenticate, downloadFile);
+router.get('/:id/download', authenticateUserOrAdmin, downloadFile);
 
 // @route   PUT /api/files/:id
-router.put('/:id', authenticate, updateFile);
+router.put('/:id', authenticateUserOrAdmin, updateFile);
 
 // @route   DELETE /api/files/:id
-router.delete('/:id', authenticate, deleteFile);
+router.delete('/:id', authenticateUserOrAdmin, deleteFile);
 
 module.exports = router;
